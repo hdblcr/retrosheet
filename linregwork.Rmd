@@ -1,0 +1,103 @@
+---
+title: "LR1"
+author: "Mrs. James"
+date: "12/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!-- ## R Markdown -->
+
+<!-- This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. -->
+
+<!-- When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this: -->
+
+<!-- ```{r cars} -->
+<!-- summary(cars) -->
+<!-- ``` -->
+
+<!-- ## Including Plots -->
+
+<!-- You can also embed plots, for example: -->
+
+<!-- ```{r pressure, echo=FALSE} -->
+<!-- plot(pressure) -->
+<!-- ``` -->
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Teams
+```{r}
+#import.packages(c("tidyverse","retrosheet"))
+library(tibble)
+library(retrosheet)
+
+yr <- 2021
+tms <- getTeamIDs(yr)
+```
+
+## Home Teams
+```{r}
+f <- grep("Date|HmTm|HmTmGmNum", gamelogFields, value = TRUE)
+ptGmLg <- getPartialGamelog(yr, glFields = f)
+#tst <- which(ptGmLg$HmTm == "CHN", arr.ind = TRUE)
+#tst <- data.frame()
+```
+
+
+## Ian's Magic Database
+Dataframe of game-by-game player stats.
+```{r}
+cb <- read.csv("~/R/retrosheet/chadwickbureau2021.csv")
+bat <- list(cb)
+tst1 <- data.frame(cb$game.key, cb$game.date, cb$game.number, cb$team.alignment,
+                   cb$B_G, cb$B_PA, cb$B_AB, cb$B_R, cb$B_H, 
+                   cb$B_TB, cb$B_2B, cb$B_3B, cb$B_HR, cb$B_HR4, 
+                   cb$B_RBI, cb$B_GW, cb$B_BB, cb$B_IBB, cb$B_SO, 
+                   cb$B_GDP, cb$B_HP, cb$B_SH, cb$B_SF, cb$B_SB, 
+                   cb$B_CS, cb$B_XI, cb$B_G_DH, cb$B_G_PH, cb$B_G_PR)
+  
+```
+
+## game scores
+Get score for each game
+```{r}
+library(dplyr)
+library(tidyr)
+gms <- get_retrosheet("game", yr)
+
+makeDate <- function(dt){
+  new <- strsplit(toString(dt), split = "-")
+  myPaste <- paste0(new)
+  return(myPaste)
+}
+
+makeId <- function(row){
+  newId <- paste0(gms$HmTm, makeDate(gms$Date), gms$DblHdr)
+  return(newId)
+}
+
+HmTm <- gms$HmTm
+myGms <- tibble(HmTm)
+
+myGms$gmDt <- lapply(gms$Date, makeDate)
+myGms$DblHdr <- gms$DblHdr
+myGms %>%
+  unite("GameId", HmTm:DblHdr, remove = FALSE, na.rm = FALSE, sep="")
+
+myGms$HmRuns <- gms$HmRuns
+myGms$VisRuns <-gms$VisRuns
+# }
+# scores <- tibble()
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
